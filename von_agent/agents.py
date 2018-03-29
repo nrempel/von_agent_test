@@ -51,7 +51,8 @@ class BaseAgent:
 
         self._pool = pool
 
-        self._wallet = Wallet(pool.name, seed, wallet_base_name, 0, wallet_cfg_json)
+        self._wallet = Wallet(
+            pool.name, seed, wallet_base_name, 0, wallet_cfg_json)
 
         logger.debug('BaseAgent.__init__: <<<')
 
@@ -138,7 +139,8 @@ class BaseAgent:
         """
 
         logger = logging.getLogger(__name__)
-        logger.debug('BaseAgent.__aexit__: >>> exc_type: {}, exc: {}, traceback: {}'.format(exc_type, exc, traceback))
+        logger.debug('BaseAgent.__aexit__: >>> exc_type: {}, exc: {}, traceback: {}'.format(
+            exc_type, exc, traceback))
 
         await self.close()
         logger.debug('BaseAgent.__exit__: <<<')
@@ -171,7 +173,8 @@ class BaseAgent:
             self.did,
             did)
         resp_json = await ledger.submit_request(self.pool.handle, get_nym_req)
-        data_json = (json.loads(resp_json))['result']['data']  # it's double-encoded on the ledger
+        # it's double-encoded on the ledger
+        data_json = (json.loads(resp_json))['result']['data']
         if data_json is None:
             return json.dumps({})
 
@@ -205,7 +208,8 @@ class BaseAgent:
         resp_json = await ledger.submit_request(self.pool.handle, req_json)
         resp = json.loads(resp_json)
 
-        data_json = (json.loads(resp_json))['result']['data']  # it's double-encoded on the ledger
+        # it's double-encoded on the ledger
+        data_json = (json.loads(resp_json))['result']['data']
         if (not data_json) or ('attr_names' not in data_json):
             return json.dumps({})  # not present, give back an empty production
 
@@ -229,7 +233,8 @@ class BaseAgent:
             did,
             'endpoint')
         resp_json = await ledger.submit_request(self.pool.handle, req_json)
-        data_json = (json.loads(resp_json))['result']['data']  # it's double-encoded on the ledger
+        # it's double-encoded on the ledger
+        data_json = (json.loads(resp_json))['result']['data']
         if data_json is None:
             return json.dumps({})
         endpoint = json.loads(data_json)['endpoint']
@@ -273,13 +278,13 @@ class BaseListeningAgent(BaseAgent):
     """
 
     def __init__(self,
-            pool: NodePool,
-            seed: str,
-            wallet_base_name: str,
-            wallet_cfg_json: str,
-            host: str,
-            port: int,
-            agent_api_path: str = '') -> None:
+                 pool: NodePool,
+                 seed: str,
+                 wallet_base_name: str,
+                 wallet_cfg_json: str,
+                 host: str,
+                 port: int,
+                 agent_api_path: str = '') -> None:
         """
         Initializer for agent. Does not open its wallet, only retains input parameters.
 
@@ -294,13 +299,13 @@ class BaseListeningAgent(BaseAgent):
 
         logger = logging.getLogger(__name__)
         logger.debug('BaseListeningAgent.__init__: >>> ' +
-            'pool: {}, ' +
-            'seed: [SEED], ' +
-            'wallet_base_name: {}, ' +
-            'wallet_cfg_json: {}, ' +
-            'host: {}, ' +
-            'port: {}, ' +
-            'agent_api_path: {}'.format(pool, wallet_base_name, wallet_cfg_json, host, port, agent_api_path))
+                     'pool: {}, ' +
+                     'seed: [SEED], ' +
+                     'wallet_base_name: {}, ' +
+                     'wallet_cfg_json: {}, ' +
+                     'host: {}, ' +
+                     'port: {}, ' +
+                     'agent_api_path: {}'.format(pool, wallet_base_name, wallet_cfg_json, host, port, agent_api_path))
 
         super().__init__(pool, seed, wallet_base_name, wallet_cfg_json)
         self._host = host
@@ -328,10 +333,12 @@ class BaseListeningAgent(BaseAgent):
 
     def _vet_keys(must: Set[str], have: Set[str], hint: str = '') -> None:
         logger = logging.getLogger(__name__)
-        logger.debug('BaseListeningAgent._vet_keys: >>> must: {}, have: {}, hint: {}'.format(must, have, hint))
+        logger.debug('BaseListeningAgent._vet_keys: >>> must: {}, have: {}, hint: {}'.format(
+            must, have, hint))
 
         if not must.issubset(have):
-            x = ValueError('Bad token:{} missing keys {}'.format(' ' + hint, must - have))
+            x = ValueError('Bad token:{} missing keys {}'.format(
+                ' ' + hint, must - have))
             logger.exception(x)
             raise x
 
@@ -390,7 +397,8 @@ class BaseListeningAgent(BaseAgent):
             return json.dumps({})  # not present, give back an empty production
 
         if resp['result']['data']['revocation'] is not None:
-            resp['result']['data']['revocation'] = None  #TODO: support revocation
+            # TODO: support revocation
+            resp['result']['data']['revocation'] = None
 
         rv = json.dumps(resp['result'])
         logger.debug('BaseListeningAgent.get_claim_def: <<< {}'.format(rv))
@@ -442,7 +450,8 @@ class BaseListeningAgent(BaseAgent):
         """
 
         logger = logging.getLogger(__name__)
-        logger.debug('BaseListeningAgent._schema_info: >>> form_data: {}'.format(form_data))
+        logger.debug(
+            'BaseListeningAgent._schema_info: >>> form_data: {}'.format(form_data))
 
         if 'schema' in form_data:
             self.__class__._vet_keys(
@@ -450,7 +459,7 @@ class BaseListeningAgent(BaseAgent):
                 set(form_data['schema'].keys()),
                 hint='schema')
             schema_json = await self.get_schema(
-                form_data['schema']['issuer-did'], 
+                form_data['schema']['issuer-did'],
                 form_data['schema']['name'],
                 form_data['schema']['version'])
         elif self.schema_cache is not None:
@@ -490,7 +499,8 @@ class BaseListeningAgent(BaseAgent):
             r.raise_for_status()
 
             rv = json.dumps(r.json())  # requests module json-decodes
-            logger.debug('BaseListeningAgent._response_from_proxy: <<< {}'.format(rv))
+            logger.debug(
+                'BaseListeningAgent._response_from_proxy: <<< {}'.format(rv))
             return rv
 
         logger.debug('BaseListeningAgent._response_from_proxy: <<<')
@@ -499,10 +509,11 @@ class BaseListeningAgent(BaseAgent):
     @classmethod
     def _mro_dispatch(cls):
         logger = logging.getLogger(__name__)
-        logger.debug('BaseListeningAgent._mro_dispatch: >>> cls.__name__: {}'.format(cls.__name__))
+        logger.debug(
+            'BaseListeningAgent._mro_dispatch: >>> cls.__name__: {}'.format(cls.__name__))
 
         rv = [c for c in cls.__mro__
-            if issubclass(c, BaseListeningAgent) and issubclass(cls, c) and c != cls]
+              if issubclass(c, BaseListeningAgent) and issubclass(cls, c) and c != cls]
         rv.reverse()
 
         logger.debug('BaseListeningAgent._mro_dispatch: <<< {}'.format(rv))
@@ -518,14 +529,16 @@ class BaseListeningAgent(BaseAgent):
         """
 
         logger = logging.getLogger(__name__)
-        logger.debug('BaseListeningAgent.process_post: >>> form: : {}'.format(form))
+        logger.debug(
+            'BaseListeningAgent.process_post: >>> form: : {}'.format(form))
 
-        self.__class__._vet_keys({'type', 'data'}, set(form.keys()))  # all tokens need type and data
+        self.__class__._vet_keys({'type', 'data'}, set(
+            form.keys()))  # all tokens need type and data
 
         if form['type'] == 'agent-nym-lookup':  # local only, no use case for proxying
             # get agent nym from ledger (if present)
             self.__class__._vet_keys(
-                {'agent-nym',},
+                {'agent-nym', },
                 set(form['data'].keys()),
                 hint='data')
             self.__class__._vet_keys(
@@ -575,14 +588,15 @@ class BaseListeningAgent(BaseAgent):
                 set(form['data']['schema'].keys()),
                 hint='schema')
             schema_json = await self.get_schema(
-                form['data']['schema']['issuer-did'], 
+                form['data']['schema']['issuer-did'],
                 form['data']['schema']['name'],
                 form['data']['schema']['version'])
             schema = json.loads(schema_json)
 
             if not schema:
                 rv = schema_json
-                logger.debug('BaseListeningAgent.process_post: <<< {}'.format(rv))
+                logger.debug(
+                    'BaseListeningAgent.process_post: <<< {}'.format(rv))
                 return rv
 
             rv = schema_json
@@ -603,39 +617,47 @@ class BaseListeningAgent(BaseAgent):
             resp_proxy_json = await self._response_from_proxy(form, 'proxy-did')
             if resp_proxy_json != None:
                 rv = resp_proxy_json  # it's proxied
-                logger.debug('BaseListeningAgent.process_post: <<< {}'.format(rv))
+                logger.debug(
+                    'BaseListeningAgent.process_post: <<< {}'.format(rv))
                 return rv
 
             # it's local: base listening agent doesn't do this work
-            logger.debug('BaseListeningAgent.process_post: <!< not this form type: {}'.format(form['type']))
+            logger.debug(
+                'BaseListeningAgent.process_post: <!< not this form type: {}'.format(form['type']))
             raise NotImplementedError(
                 '{} does not respond locally to token type {}'.format(self.__class__.__name__, form['type']))
 
         elif form['type'] == 'proof-request-by-claim-uuid':
-            self.__class__._vet_keys({'claim-uuid'}, set(form['data'].keys()), hint='data')
+            self.__class__._vet_keys(
+                {'claim-uuid'}, set(form['data'].keys()), hint='data')
 
             resp_proxy_json = await self._response_from_proxy(form, 'proxy-did')
             if resp_proxy_json != None:
                 rv = resp_proxy_json  # it's proxied
-                logger.debug('BaseListeningAgent.process_post: <<< {}'.format(rv))
+                logger.debug(
+                    'BaseListeningAgent.process_post: <<< {}'.format(rv))
                 return rv
 
             # it's local: base listening agent doesn't do this work
-            logger.debug('BaseListeningAgent.process_post: <!< not this form type: {}'.format(form['type']))
+            logger.debug(
+                'BaseListeningAgent.process_post: <!< not this form type: {}'.format(form['type']))
             raise NotImplementedError(
                 '{} does not respond locally to token type {}'.format(self.__class__.__name__, form['type']))
 
         elif form['type'] == 'verification-request':
-            self.__class__._vet_keys({'proof-req', 'proof'}, set(form['data'].keys()), hint='data')
+            self.__class__._vet_keys(
+                {'proof-req', 'proof'}, set(form['data'].keys()), hint='data')
 
             resp_proxy_json = await self._response_from_proxy(form, 'proxy-did')
             if resp_proxy_json != None:
                 rv = resp_proxy_json  # it's proxied
-                logger.debug('BaseListeningAgent.process_post: <<< {}'.format(rv))
+                logger.debug(
+                    'BaseListeningAgent.process_post: <<< {}'.format(rv))
                 return rv
 
             # it's local: base listening agent doesn't do this work
-            logger.debug('BaseListeningAgent.process_post: <!< not this form type: {}'.format(form['type']))
+            logger.debug(
+                'BaseListeningAgent.process_post: <!< not this form type: {}'.format(form['type']))
             raise NotImplementedError(
                 '{} does not respond locally to token type {}'.format(self.__class__.__name__, form['type']))
 
@@ -643,31 +665,38 @@ class BaseListeningAgent(BaseAgent):
             resp_proxy_json = await self._response_from_proxy(form, 'proxy-did')
             if resp_proxy_json != None:
                 rv = resp_proxy_json  # it's proxied
-                logger.debug('BaseListeningAgent.process_post: <<< {}'.format(rv))
+                logger.debug(
+                    'BaseListeningAgent.process_post: <<< {}'.format(rv))
                 return rv
 
             # it's local: base listening agent doesn't do this work
-            logger.debug('BaseListeningAgent.process_post: <!< not this form type: {}'.format(form['type']))
+            logger.debug(
+                'BaseListeningAgent.process_post: <!< not this form type: {}'.format(form['type']))
             raise NotImplementedError(
                 '{} does not respond locally to token type {}'.format(self.__class__.__name__, form['type']))
 
         elif form['type'] == 'claim-store':
-            self.__class__._vet_keys({'claim'}, set(form['data'].keys()), hint='data')
+            self.__class__._vet_keys({'claim'}, set(
+                form['data'].keys()), hint='data')
 
             resp_proxy_json = await self._response_from_proxy(form, 'proxy-did')
             if resp_proxy_json != None:
                 rv = resp_proxy_json  # it's proxied
-                logger.debug('BaseListeningAgent.process_post: <<< {}'.format(rv))
+                logger.debug(
+                    'BaseListeningAgent.process_post: <<< {}'.format(rv))
                 return rv
 
             # it's local: base listening agent doesn't do this work
-            logger.debug('BaseListeningAgent.process_post: <!< not this form type: {}'.format(form['type']))
+            logger.debug(
+                'BaseListeningAgent.process_post: <!< not this form type: {}'.format(form['type']))
             raise NotImplementedError(
                 '{} does not respond locally to token type {}'.format(self.__class__.__name__, form['type']))
 
         # unknown token type
-        logger.debug('BaseListeningAgent.process_post: <!< not this form type: {}'.format(form['type']))
-        raise NotImplementedError('{} does not support token type {}'.format(self.__class__.__name__, form['type']))
+        logger.debug(
+            'BaseListeningAgent.process_post: <!< not this form type: {}'.format(form['type']))
+        raise NotImplementedError('{} does not support token type {}'.format(
+            self.__class__.__name__, form['type']))
 
     async def process_get_txn(self, txn: int) -> str:
         """
@@ -678,7 +707,8 @@ class BaseListeningAgent(BaseAgent):
         """
 
         logger = logging.getLogger(__name__)
-        logger.debug('BaseListeningAgent.process_get_txn: >>> txn: {}'.format(txn))
+        logger.debug(
+            'BaseListeningAgent.process_get_txn: >>> txn: {}'.format(txn))
 
         req_json = await ledger.build_get_txn_request(self.did, txn)
         resp = json.loads(await ledger.submit_request(self.pool.handle, req_json))
@@ -731,7 +761,8 @@ class AgentRegistrar(BaseListeningAgent):
         """
 
         logger = logging.getLogger(__name__)
-        logger.debug('AgentRegistrar.send_nym: >>> did: {}, verkey: {}'.format(did, verkey))
+        logger.debug(
+            'AgentRegistrar.send_nym: >>> did: {}, verkey: {}'.format(did, verkey))
 
         req_json = await ledger.build_nym_request(
             self.did,
@@ -759,7 +790,8 @@ class AgentRegistrar(BaseListeningAgent):
         logger = logging.getLogger(__name__)
         logger.debug('AgentRegistrar.process_post: >>> form: {}'.format(form))
 
-        self.__class__._vet_keys({'type', 'data'}, set(form.keys()))  # all tokens need type and data
+        self.__class__._vet_keys({'type', 'data'}, set(
+            form.keys()))  # all tokens need type and data
 
         # Try each responder code base from BaseListeningAgent up before trying locally
         mro = AgentRegistrar._mro_dispatch()
@@ -774,7 +806,7 @@ class AgentRegistrar(BaseListeningAgent):
         if form['type'] == 'agent-nym-send':
             # write agent nym to ledger
             self.__class__._vet_keys(
-                {'agent-nym',},
+                {'agent-nym', },
                 set(form['data'].keys()),
                 hint='data')
             self.__class__._vet_keys(
@@ -789,8 +821,10 @@ class AgentRegistrar(BaseListeningAgent):
             return rv
 
         # token-type/proxy
-        logger.debug('AgentRegistrar.process_post: <!< not this form type: {}'.format(form['type']))
-        raise NotImplementedError('{} does not support token type {}'.format(self.__class__.__name__, form['type']))
+        logger.debug(
+            'AgentRegistrar.process_post: <!< not this form type: {}'.format(form['type']))
+        raise NotImplementedError('{} does not support token type {}'.format(
+            self.__class__.__name__, form['type']))
 
 
 class Origin(BaseListeningAgent):
@@ -813,7 +847,8 @@ class Origin(BaseListeningAgent):
         """
 
         logger = logging.getLogger(__name__)
-        logger.debug('Origin.send_schema: >>> schema_data_json: {}'.format(schema_data_json))
+        logger.debug(
+            'Origin.send_schema: >>> schema_data_json: {}'.format(schema_data_json))
 
         req_json = await ledger.build_schema_request(self.did, schema_data_json)
         resp_json = await ledger.sign_and_submit_request(self.pool.handle, self.wallet.handle, self.did, req_json)
@@ -835,7 +870,8 @@ class Origin(BaseListeningAgent):
         logger = logging.getLogger(__name__)
         logger.debug('Origin.process_post: >>> form: {}'.format(form))
 
-        self.__class__._vet_keys({'type', 'data'}, set(form.keys()))  # all tokens need type and data
+        self.__class__._vet_keys({'type', 'data'}, set(
+            form.keys()))  # all tokens need type and data
 
         # Try each responder code base from BaseListeningAgent up before trying locally
         mro = Origin._mro_dispatch()
@@ -873,13 +909,42 @@ class Origin(BaseListeningAgent):
             return rv
 
         # token-type
-        logger.debug('Origin.process_post: <!< not this form type: {}'.format(form['type']))
-        raise NotImplementedError('{} does not support token type {}'.format(self.__class__.__name__, form['type']))
+        logger.debug(
+            'Origin.process_post: <!< not this form type: {}'.format(form['type']))
+        raise NotImplementedError('{} does not support token type {}'.format(
+            self.__class__.__name__, form['type']))
+
 
 class Issuer(BaseListeningAgent):
     """
     Mixin for agent acting in role of Issuer
     """
+
+    async def send_schema(self, schema_data_json: str) -> str:
+        """
+        Method for schema originator to send schema to ledger, then retrieve it as written
+        (and completed through the write process to the ledger) and return it.
+
+        :param schema_data_json: schema data json with name, version, attribute names;
+            e.g.,: {
+                'name': 'my-schema',
+                'version': '1.234',
+                'attr_names': ['favourite_drink', 'height', 'last_visit_date']
+            }
+        :return: schema json as written to ledger
+        """
+
+        logger = logging.getLogger(__name__)
+        logger.debug(
+            'Origin.send_schema: >>> schema_data_json: {}'.format(schema_data_json))
+
+        req_json = await ledger.build_schema_request(self.did, schema_data_json)
+        resp_json = await ledger.sign_and_submit_request(self.pool.handle, self.wallet.handle, self.did, req_json)
+        resp = (json.loads(resp_json))['result']
+
+        rv = await self.get_schema(resp['identifier'], resp['data']['name'], resp['data']['version'])
+        logger.debug('Origin.send_schema: <<< {}'.format(rv))
+        return rv
 
     async def send_claim_def(self, schema_json: str) -> str:
         """
@@ -890,7 +955,8 @@ class Issuer(BaseListeningAgent):
         """
 
         logger = logging.getLogger(__name__)
-        logger.debug('Issuer.send_claim_def: >>> schema_json: {}'.format(schema_json))
+        logger.debug(
+            'Issuer.send_claim_def: >>> schema_json: {}'.format(schema_json))
 
         schema = json.loads(schema_json)
         claim_def_json = await anoncreds.issuer_create_and_store_claim_def(
@@ -935,7 +1001,8 @@ class Issuer(BaseListeningAgent):
         """
 
         logger = logging.getLogger(__name__)
-        logger.debug('Issuer.create_claim: >>> claim_req_json: {}, claim: {}'.format(claim_req_json, claim))
+        logger.debug('Issuer.create_claim: >>> claim_req_json: {}, claim: {}'.format(
+            claim_req_json, claim))
 
         rv = await anoncreds.issuer_create_claim(
             self.wallet.handle,
@@ -957,7 +1024,8 @@ class Issuer(BaseListeningAgent):
         logger = logging.getLogger(__name__)
         logger.debug('Issuer.process_post: >>> form: {}'.format(form))
 
-        self.__class__._vet_keys({'type', 'data'}, set(form.keys()))  # all tokens need type and data
+        self.__class__._vet_keys({'type', 'data'}, set(
+            form.keys()))  # all tokens need type and data
 
         # Try each responder code base from BaseListeningAgent up before trying locally
         mro = Issuer._mro_dispatch()
@@ -980,7 +1048,8 @@ class Issuer(BaseListeningAgent):
             return rv
 
         elif form['type'] == 'claim-create':
-            self.__class__._vet_keys({'claim-req', 'claim-attrs'}, set(form['data'].keys()), hint='data')
+            self.__class__._vet_keys(
+                {'claim-req', 'claim-attrs'}, set(form['data'].keys()), hint='data')
 
             # it's local, carry on (no use case for proxying)
             _, rv = await self.create_claim(
@@ -990,13 +1059,15 @@ class Issuer(BaseListeningAgent):
                         str(form['data']['claim-attrs'][k]),
                         encode(form['data']['claim-attrs'][k])
                     ] for k in form['data']['claim-attrs']
-                })
+                 })
             logger.debug('Issuer.process_post: <<< {}'.format(rv))
             return rv  # TODO: support revocation -- this return value will change
 
         # token-type
-        logger.debug('Issuer.process_post: <!< not this form type: {}'.format(form['type']))
-        raise NotImplementedError('{} does not support token type {}'.format(self.__class__.__name__, form['type']))
+        logger.debug(
+            'Issuer.process_post: <!< not this form type: {}'.format(form['type']))
+        raise NotImplementedError('{} does not support token type {}'.format(
+            self.__class__.__name__, form['type']))
 
 
 class HolderProver(BaseListeningAgent):
@@ -1006,13 +1077,13 @@ class HolderProver(BaseListeningAgent):
     """
 
     def __init__(self,
-            pool: NodePool,
-            seed: str,
-            wallet_base_name: str,
-            wallet_cfg_json: str,
-            host: str,
-            port: int,
-            agent_api_path: str = '') -> None:
+                 pool: NodePool,
+                 seed: str,
+                 wallet_base_name: str,
+                 wallet_cfg_json: str,
+                 host: str,
+                 port: int,
+                 agent_api_path: str = '') -> None:
         """
         Initializer for agent. Does not open its wallet, only retains input parameters.
 
@@ -1027,17 +1098,19 @@ class HolderProver(BaseListeningAgent):
 
         logger = logging.getLogger(__name__)
         logger.debug('HolderProver.__init__: >>> ' +
-            'pool: {}, ' +
-            'seed: [SEED], ' +
-            'wallet_base_name: {}, ' +
-            'wallet_cfg_json: {}, ' +
-            'host: {}, ' +
-            'port: {}, ' +
-            'agent_api_path: {}'.format(pool, wallet_base_name, wallet_cfg_json, host, port, agent_api_path))
+                     'pool: {}, ' +
+                     'seed: [SEED], ' +
+                     'wallet_base_name: {}, ' +
+                     'wallet_cfg_json: {}, ' +
+                     'host: {}, ' +
+                     'port: {}, ' +
+                     'agent_api_path: {}'.format(pool, wallet_base_name, wallet_cfg_json, host, port, agent_api_path))
 
-        super().__init__(pool, seed, wallet_base_name, wallet_cfg_json, host, port, agent_api_path)
+        super().__init__(pool, seed, wallet_base_name,
+                         wallet_cfg_json, host, port, agent_api_path)
         self._master_secret = None
-        self._claim_req_json = None  # FIXME: support multiple schema, use dict: txn_no -> claim_req_json
+        # FIXME: support multiple schema, use dict: txn_no -> claim_req_json
+        self._claim_req_json = None
 
         logger.debug('HolderProver.__init__: <<<')
 
@@ -1059,7 +1132,8 @@ class HolderProver(BaseListeningAgent):
         """
 
         logger = logging.getLogger(__name__)
-        logger.debug('HolderProver.create_master_secret: >>> master_secret {}'.format(master_secret))
+        logger.debug(
+            'HolderProver.create_master_secret: >>> master_secret {}'.format(master_secret))
 
         await anoncreds.prover_create_master_secret(self.wallet.handle, master_secret)
         self._master_secret = master_secret
@@ -1083,7 +1157,6 @@ class HolderProver(BaseListeningAgent):
             }))
 
         logger.debug('HolderProver.store_claim_offer: <<<')
-
 
     async def store_claim_req(self, issuer_did: str, claim_def_json: str) -> str:
         """
@@ -1109,10 +1182,11 @@ class HolderProver(BaseListeningAgent):
             self.did,
             json.dumps({
                 'issuer_did': issuer_did,
-                'schema_seq_no': json.loads(claim_def_json)['ref']  # = schema seq no
+                # = schema seq no
+                'schema_seq_no': json.loads(claim_def_json)['ref']
             }),
             claim_def_json,
-            self._master_secret);
+            self._master_secret)
 
         self._claim_req_json = rv
         logger.debug('HolderProver.store_claim_req: <<< {}'.format(rv))
@@ -1126,16 +1200,17 @@ class HolderProver(BaseListeningAgent):
         """
 
         logger = logging.getLogger(__name__)
-        logger.debug('HolderProver.store_claim: >>> claim_json: {}'.format(claim_json))
+        logger.debug(
+            'HolderProver.store_claim: >>> claim_json: {}'.format(claim_json))
 
         await anoncreds.prover_store_claim(self.wallet.handle, claim_json)
         logger.debug('HolderProver.store_claim: <<<')
 
     async def create_proof(self,
-            proof_req_json: str,
-            schema: dict,
-            claim_def: dict,
-            requested_claims: dict = None) -> str:
+                           proof_req_json: str,
+                           schema: dict,
+                           claim_def: dict,
+                           requested_claims: dict = None) -> str:
         """
         Method for HolderProver to create proof.
 
@@ -1206,12 +1281,12 @@ class HolderProver(BaseListeningAgent):
             json.dumps(requested_claims),
             json.dumps({  # schemas_json
                 claim_uuid[0]: schema
-                    for claim_uuid in requested_claims['requested_attrs'].values()
+                for claim_uuid in requested_claims['requested_attrs'].values()
             }),
             self._master_secret,
             json.dumps({  # claim_defs_json
                 claim_uuid[0]: claim_def
-                    for claim_uuid in requested_claims['requested_attrs'].values()
+                for claim_uuid in requested_claims['requested_attrs'].values()
             }),
             json.dumps({})  # revoc_regs_json
         )
@@ -1260,7 +1335,8 @@ class HolderProver(BaseListeningAgent):
         """
 
         logger = logging.getLogger(__name__)
-        logger.debug('HolderProver.get_claims: >>> proof_req_json: {}, filt: {}'.format(proof_req_json, filt))
+        logger.debug('HolderProver.get_claims: >>> proof_req_json: {}, filt: {}'.format(
+            proof_req_json, filt))
 
         claims_for_proof_json = await anoncreds.prover_get_claims_for_proof_req(self.wallet.handle, proof_req_json)
         claims_for_proof = json.loads(claims_for_proof_json)
@@ -1274,7 +1350,8 @@ class HolderProver(BaseListeningAgent):
                     if filt.items() <= candidate['attrs'].items():
                         claim_uuids.add(candidate['claim_uuid'])
         if filt is not None:
-            claims_for_proof = json.loads(prune_claims_json(claim_uuids, claims_for_proof))
+            claims_for_proof = json.loads(
+                prune_claims_json(claim_uuids, claims_for_proof))
 
         rv = (claim_uuids, json.dumps(claims_for_proof))
         logger.debug('HolderProver.get_claims: <<< {}'.format(rv))
@@ -1296,18 +1373,18 @@ class HolderProver(BaseListeningAgent):
 
         schema = json.loads(schema_json)
         claim_req_json = json.dumps({
-                'nonce': str(int(time() * 1000)),
-                'name': 'claim-request',  # for Verifier info, not HolderProver matching
-                'version': '1.0',  # for Verifier info, not HolderProver matching
-                'requested_attrs': {
+            'nonce': str(int(time() * 1000)),
+            'name': 'claim-request',  # for Verifier info, not HolderProver matching
+            'version': '1.0',  # for Verifier info, not HolderProver matching
+            'requested_attrs': {
                     '{}_uuid'.format(attr): {
                         'schema_seq_no': schema['seqNo'],
                         'name': attr
                     } for attr in schema['data']['attr_names']
-                },
-                'requested_predicates': {
-                }
-            })
+            },
+            'requested_predicates': {
+            }
+        })
 
         claims_for_proof_json = await anoncreds.prover_get_claims_for_proof_req(self.wallet.handle, claim_req_json)
 
@@ -1338,10 +1415,12 @@ class HolderProver(BaseListeningAgent):
         num = self.wallet.num
         cfg_json = self.wallet.cfg_json
         await self.wallet.close()
-        self._wallet = Wallet(self.pool.name, _seed, base_name, num + 1, cfg_json)
+        self._wallet = Wallet(self.pool.name, _seed,
+                              base_name, num + 1, cfg_json)
         await self.wallet.open()
 
-        await self.create_master_secret(self._master_secret)  # carry over master secret to new wallet
+        # carry over master secret to new wallet
+        await self.create_master_secret(self._master_secret)
 
         rv = self.wallet.num
         logger.debug('HolderProver.reset_wallet: <<< {}'.format(rv))
@@ -1359,7 +1438,8 @@ class HolderProver(BaseListeningAgent):
         logger = logging.getLogger(__name__)
         logger.debug('HolderProver.process_post: >>> form: {}'.format(form))
 
-        self.__class__._vet_keys({'type', 'data'}, set(form.keys()))  # all tokens need type and data
+        self.__class__._vet_keys({'type', 'data'}, set(
+            form.keys()))  # all tokens need type and data
 
         # Try each responder code base from BaseListeningAgent up before trying locally
         mro = HolderProver._mro_dispatch()
@@ -1373,7 +1453,8 @@ class HolderProver(BaseListeningAgent):
 
         if form['type'] == 'master-secret-set':
             # it's local, carry on (no use case for proxying)
-            self.__class__._vet_keys({'label'}, set(form['data'].keys()), hint='data')
+            self.__class__._vet_keys({'label'}, set(
+                form['data'].keys()), hint='data')
             await self.create_master_secret(form['data']['label'])
 
             rv = json.dumps({})
@@ -1382,7 +1463,8 @@ class HolderProver(BaseListeningAgent):
 
         elif form['type'] == 'claim-hello':
             # base listening agent code handles all proxied requests: it's local, carry on
-            self.__class__._vet_keys({'issuer-did'}, set(form['data'].keys()), hint='data')
+            self.__class__._vet_keys(
+                {'issuer-did'}, set(form['data'].keys()), hint='data')
             schema_json = await self._schema_info(form['data'])
             schema = json.loads(schema_json)
             await self.store_claim_offer(form['data']['issuer-did'], schema['seqNo'])
@@ -1408,7 +1490,7 @@ class HolderProver(BaseListeningAgent):
             schema = json.loads(await self._schema_info(form['data']))
             find_req = {
                 'nonce': str(int(time() * 1000)),
-                'name': 'find_req_0', # informational only
+                'name': 'find_req_0',  # informational only
                 'version': '1.0',  # informational only
                 'requested_attrs': {
                     '{}_uuid'.format(attr): {
@@ -1424,7 +1506,7 @@ class HolderProver(BaseListeningAgent):
             filt = {
                 #k: encode(form['data']['claim-filter']['attr-match'][k])
                 k: str(form['data']['claim-filter']['attr-match'][k])
-                    for k in form['data']['claim-filter']['attr-match']
+                for k in form['data']['claim-filter']['attr-match']
             } if form['data']['claim-filter']['attr-match'] else None
             (claim_uuids, claims_found_json) = await self.get_claims(json.dumps(find_req), filt)
             claims_found = json.loads(claims_found_json)
@@ -1443,11 +1525,11 @@ class HolderProver(BaseListeningAgent):
                 'self_attested_attributes': {},
                 'requested_attrs': {
                     attr: [claim_uuid, True]
-                        for attr in find_req['requested_attrs'] if attr in claims_found['attrs']
+                    for attr in find_req['requested_attrs'] if attr in claims_found['attrs']
                 },
                 'requested_predicates': {
                     pred: claim_uuid
-                        for pred in find_req['requested_predicates']
+                    for pred in find_req['requested_predicates']
                 }
             }
 
@@ -1467,21 +1549,23 @@ class HolderProver(BaseListeningAgent):
             return rv
 
         elif form['type'] == 'proof-request-by-claim-uuid':
-            self.__class__._vet_keys({'claim-uuid'}, set(form['data'].keys()), hint='data')
+            self.__class__._vet_keys(
+                {'claim-uuid'}, set(form['data'].keys()), hint='data')
 
             # base listening agent code handles all proxied requests: it's local, carry on
             schema_json = await self._schema_info(form['data'])
             claim_json = await self.get_claim_by_claim_uuid(schema_json, form['data']['claim-uuid'])
             claim = json.loads(claim_json)
             if all(not claim['attrs'][attr] for attr in claim['attrs']):
-                x = ValueError('No claim has claim-uuid {}'.format(form['data']['claim-uuid']))
+                x = ValueError(
+                    'No claim has claim-uuid {}'.format(form['data']['claim-uuid']))
                 logger.exception(x)
                 raise x
 
             schema = json.loads(schema_json)
             proof_req = {
                 'nonce': str(int(time() * 1000)),
-                'name': 'proof_req_0', # informational only
+                'name': 'proof_req_0',  # informational only
                 'version': '1.0',  # informational only
                 'requested_attrs': {
                     '{}_uuid'.format(attr): {
@@ -1499,7 +1583,7 @@ class HolderProver(BaseListeningAgent):
                 'self_attested_attributes': {},
                 'requested_attrs': {
                     attr: [claim_uuid, True]
-                        for attr in proof_req['requested_attrs'] if attr in claim['attrs']
+                    for attr in proof_req['requested_attrs'] if attr in claim['attrs']
                 },
                 'requested_predicates': {
                 }
@@ -1521,7 +1605,8 @@ class HolderProver(BaseListeningAgent):
             return rv
 
         elif form['type'] == 'claim-store':
-            self.__class__._vet_keys({'claim'}, set(form['data'].keys()), hint='data')
+            self.__class__._vet_keys({'claim'}, set(
+                form['data'].keys()), hint='data')
 
             # base listening agent code handles all proxied requests: it's local, carry on
             await self.store_claim(json.dumps(form['data']['claim']))
@@ -1539,8 +1624,10 @@ class HolderProver(BaseListeningAgent):
             return rv
 
         # token-type
-        logger.debug('HolderProver.process_post: <!< not this form type: {}'.format(form['type']))
-        raise NotImplementedError('{} does not support token type {}'.format(self.__class__.__name__, form['type']))
+        logger.debug(
+            'HolderProver.process_post: <!< not this form type: {}'.format(form['type']))
+        raise NotImplementedError('{} does not support token type {}'.format(
+            self.__class__.__name__, form['type']))
 
 
 class Verifier(BaseListeningAgent):
@@ -1621,7 +1708,8 @@ class Verifier(BaseListeningAgent):
         logger = logging.getLogger(__name__)
         logger.debug('HolderProver.process_post: >>> form: {}'.format(form))
 
-        self.__class__._vet_keys({'type', 'data'}, set(form.keys()))  # all tokens need type and data
+        self.__class__._vet_keys({'type', 'data'}, set(
+            form.keys()))  # all tokens need type and data
 
         # Try each responder code base from BaseListeningAgent up before trying locally
         mro = Verifier._mro_dispatch()
@@ -1634,11 +1722,13 @@ class Verifier(BaseListeningAgent):
                 pass
 
         if form['type'] == 'verification-request':
-            self.__class__._vet_keys({'proof-req', 'proof'}, set(form['data'].keys()), hint='data')
+            self.__class__._vet_keys(
+                {'proof-req', 'proof'}, set(form['data'].keys()), hint='data')
 
             # base listening agent code handles all proxied requests: it's local, carry on
             schema_json = await self._schema_info(form['data'])
-            a_claim = form['data']['proof']['proofs'][set([*form['data']['proof']['proofs']]).pop()]
+            a_claim = form['data']['proof']['proofs'][set(
+                [*form['data']['proof']['proofs']]).pop()]
 
             rv = await self.verify_proof(
                 json.dumps(form['data']['proof-req']),
@@ -1651,5 +1741,7 @@ class Verifier(BaseListeningAgent):
             return rv
 
         # token-type
-        logger.debug('Verifier.process_post: <!< not this form type: {}'.format(form['type']))
-        raise NotImplementedError('{} does not support token type {}'.format(self.__class__.__name__, form['type']))
+        logger.debug(
+            'Verifier.process_post: <!< not this form type: {}'.format(form['type']))
+        raise NotImplementedError('{} does not support token type {}'.format(
+            self.__class__.__name__, form['type']))
