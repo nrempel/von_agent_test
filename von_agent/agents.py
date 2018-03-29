@@ -396,9 +396,9 @@ class BaseListeningAgent(BaseAgent):
         if data_json is None:
             return json.dumps({})  # not present, give back an empty production
 
-        if resp['result']['data']['revocation'] is not None:
+        # if resp['result']['data']['revocation'] is not None:
             # TODO: support revocation
-            resp['result']['data']['revocation'] = None
+            # resp['result']['data']['revocation'] = None
 
         rv = json.dumps(resp['result'])
         logger.debug('BaseListeningAgent.get_claim_def: <<< {}'.format(rv))
